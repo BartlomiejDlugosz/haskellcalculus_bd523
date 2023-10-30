@@ -39,7 +39,6 @@ instance Fractional Expr where
   fromRational = Val . fromRational
   (/) a b
         | Val 0 <- a = 0
-        | Val 0 <- b = undefined
         | Val 1 <- b = a
         | otherwise = Div a b
 
@@ -64,6 +63,7 @@ eval expr env = case expr of
         Add x y -> eval x env + eval y env
         Neg x -> negate (eval x env)
         Mul x y -> eval x env * eval y env
+        Div x (Val 0) -> undefined
         Div x y -> eval x env / eval y env
         Sin x -> sin (eval x env)
         Cos x -> cos (eval x env)
