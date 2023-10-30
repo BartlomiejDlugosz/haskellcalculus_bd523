@@ -60,16 +60,13 @@ eval :: Expr -> Env -> Double
 eval expr env = case expr of
         Val x -> x
         Id x -> lookUp x env
-        Add x y -> ex + ey
-        Neg x -> negate ex
-        Mul x y -> ex * ey
-        Div x y -> ex / ey
-        Sin x -> sin ex
-        Cos x -> cos ex
-        Log x -> log ex
-        where
-                ex = eval x env
-                ey = eval y env
+        Add x y -> eval x env + eval y env
+        Neg x -> negate (eval x env)
+        Mul x y -> eval x env * eval y env
+        Div x y -> eval x env / eval y env
+        Sin x -> sin (eval x env)
+        Cos x -> cos (eval x env)
+        Log x -> log (eval x env)
 
 {-| OPTIONAL
 Pretty prints an expression to a more human-readable form.
@@ -78,17 +75,14 @@ showExpr :: Expr -> String
 showExpr expr = case expr of
         Val x -> show x
         Id x -> x
-        Add x (Neg y) -> "(" ++ sx ++ " - " ++ sy ++ ")"
-        Add x y -> "(" ++ sx ++ " + " ++ sy ++ ")"
-        Neg x -> "-(" ++ sx ++ ")"
-        Mul x y -> "(" ++ sx ++ " * " ++ sy ++ ")"
-        Div x y -> "(" ++ sx ++ " / " ++ sy ++ ")"
-        Sin x -> "sin (" ++ sx ++ ")"
-        Cos x -> "cos (" ++ sx ++ ")"
-        Log x -> "log (" ++ sx ++ ")"
-        where
-                sx = showExpr x
-                sy = showExpr y
+        Add x (Neg y) -> "(" ++ showExpr x ++ " - " ++ showExpr y ++ ")"
+        Add x y -> "(" ++ showExpr x ++ " + " ++ showExpr y ++ ")"
+        Neg x -> "-(" ++ showExpr x ++ ")"
+        Mul x y -> "(" ++ showExpr x ++ " * " ++ showExpr y ++ ")"
+        Div x y -> "(" ++ showExpr x ++ " / " ++ showExpr y ++ ")"
+        Sin x -> "sin (" ++ showExpr x ++ ")"
+        Cos x -> "cos (" ++ showExpr x ++ ")"
+        Log x -> "log (" ++ showExpr x ++ ")"
 
 {-|
 Symbolically differentiates a term with respect to a given identifier.
@@ -99,16 +93,13 @@ diff (Id x) st
         | otherwise = 0
 diff expr st = case expr of
         Val x -> 0
-        Add x y -> diffX + diffY
-        Mul x y -> (x * diffY) + (diffX * y)
-        Div x y -> ((diffX * y) - (x * diffY)) / (y * y)
-        Sin x -> cos x * diffX
-        Cos x -> negate (sin x * diffX)
-        Log x -> diffX / x
-        Neg x -> negate diffX
-        where
-                diffX = diff x st
-                diffY = diff y st
+        Add x y -> diff x st + diff y st
+        Mul x y -> (x * diff y st) + (diff x st * y)
+        Div x y -> ((diff x st * y) - (x * diff y st)) / (y * y)
+        Sin x -> cos x * diff x st
+        Cos x -> negate (sin x * diff x st)
+        Log x -> diff x st / x
+        Neg x -> negate (diff x st)
 
 {-|
 Computes the approximation of an expression `f` by expanding the Maclaurin
