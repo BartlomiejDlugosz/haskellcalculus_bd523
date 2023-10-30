@@ -19,6 +19,7 @@ instance Show Expr where
 
 instance Num Expr where
   fromInteger = Val . fromIntegral
+  negate (Neg a) = a
   negate a
         | Val 0 <- a = 0
         | otherwise = Neg a
