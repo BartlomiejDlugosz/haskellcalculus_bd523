@@ -110,7 +110,6 @@ maclaurin :: Expr   -- ^ expression to approximate (with `x` free)
           -> Double -- ^ value to give to `x`
           -> Int    -- ^ number of terms to expand
           -> Double -- ^ the approximate result
-maclaurin expr x 0 = eval expr [("x", x)]
 maclaurin expr x t = helper expr 0
         where
                 -- -> Double since the helper function requires it in terms of double
