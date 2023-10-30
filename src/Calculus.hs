@@ -57,32 +57,38 @@ Evaluates a given expression, evaluating any variables to their value within
 the provided environment.
 -}
 eval :: Expr -> Env -> Double
-eval expr env
-        | Val x <- expr = x
-        | Id x <- expr = lookUp x env
-        | Add x y <- expr = eval x env + eval y env
-        | Neg x <- expr = negate (eval x env)
-        | Mul x y <- expr = eval x env * eval y env
-        | Div x y <- expr = eval x env / eval y env
-        | Sin x <- expr = sin (eval x env)
-        | Cos x <- expr = cos (eval x env)
-        | Log x <- expr = log (eval x env)
+eval expr env = case expr of
+        Val x -> x
+        Id x -> lookUp x env
+        Add x y -> ex + ey
+        Neg x -> negate ex
+        Mul x y -> ex * ey
+        Div x y -> ex / ey
+        Sin x -> sin ex
+        Cos x -> cos ex
+        Log x -> log ex
+        where
+                ex = eval x env
+                ey = eval y env
 
 {-| OPTIONAL
 Pretty prints an expression to a more human-readable form.
 -}
 showExpr :: Expr -> String
-showExpr expr
-        | Val x <- expr = show x
-        | Id x <- expr = x
-        | Add x (Neg y) <- expr = "(" ++ showExpr x ++ " - " ++ showExpr y ++ ")"
-        | Add x y <- expr = "(" ++ showExpr x ++ " + " ++ showExpr y ++ ")"
-        | Neg x <- expr = "-(" ++ showExpr x ++ ")"
-        | Mul x y <- expr = "(" ++ showExpr x ++ " * " ++ showExpr y ++ ")"
-        | Div x y <- expr = "(" ++ showExpr x ++ " / " ++ showExpr y ++ ")"
-        | Sin x <- expr = "sin (" ++ showExpr x ++ ")"
-        | Cos x <- expr = "cos (" ++ showExpr x ++ ")"
-        | Log x <- expr = "log (" ++ showExpr x ++ ")"
+showExpr expr = case expr of
+        Val x -> show x
+        Id x -> x
+        Add x (Neg y) -> "(" ++ sx ++ " - " ++ sy ++ ")"
+        Add x y -> "(" ++ sx ++ " + " ++ sy ++ ")"
+        Neg x -> "-(" ++ sx ++ ")"
+        Mul x y -> "(" ++ sx ++ " * " ++ sy ++ ")"
+        Div x y -> "(" ++ sx ++ " / " ++ sy ++ ")"
+        Sin x -> "sin (" ++ sx ++ ")"
+        Cos x -> "cos (" ++ sx ++ ")"
+        Log x -> "log (" ++ sx ++ ")"
+        where
+                sx = showExpr x
+                sy = showExpr y
 
 {-|
 Symbolically differentiates a term with respect to a given identifier.
@@ -91,15 +97,18 @@ diff :: Expr -> String -> Expr
 diff (Id x) st
         | x == st = 1
         | otherwise = 0
-diff expr st 
-        | Val x <- expr = 0
-        | Add x y <- expr = diff x st + diff y st
-        | Mul x y <- expr = (x * diff y st) + (diff x st * y)
-        | Div x y <- expr = ((diff x st * y) - (x * diff y st)) / (y * y)
-        | Sin x <- expr = cos x * diff x st
-        | Cos x <- expr = negate (Sin x * diff x st)
-        | Log x <- expr = diff x st / x
-        | Neg x <- expr = negate (diff x st)
+diff expr st = case expr of
+        Val x -> 0
+        Add x y -> diffX + diffY
+        Mul x y -> (x * diffY) + (diffX * y)
+        Div x y -> ((diffX * y) - (x * diffY)) / (y * y)
+        Sin x -> cos x * diffX
+        Cos x -> negate (sin x * diffX)
+        Log x -> diffX / x
+        Neg x -> negate diffX
+        where
+                diffX = diff x st
+                diffY = diff y st
 
 {-|
 Computes the approximation of an expression `f` by expanding the Maclaurin
