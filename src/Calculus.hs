@@ -13,7 +13,9 @@ type Env = [(String, Double)]
 
 -- Comment this out if you want to implement your own instance in terms
 -- of `showExpr`
-deriving instance Show Expr
+-- deriving instance Show Expr
+instance Show Expr where 
+        show = showExpr
 
 instance Num Expr where
   fromInteger = Val . fromIntegral
@@ -70,7 +72,17 @@ eval expr env
 Pretty prints an expression to a more human-readable form.
 -}
 showExpr :: Expr -> String
-showExpr = undefined
+showExpr expr
+        | Val x <- expr = show x
+        | Id x <- expr = x
+        | Add x (Neg y) <- expr = "(" ++ showExpr x ++ " - " ++ showExpr y ++ ")"
+        | Add x y <- expr = "(" ++ showExpr x ++ " + " ++ showExpr y ++ ")"
+        | Neg x <- expr = "-(" ++ showExpr x ++ ")"
+        | Mul x y <- expr = "(" ++ showExpr x ++ " * " ++ showExpr y ++ ")"
+        | Div x y <- expr = "(" ++ showExpr x ++ " / " ++ showExpr y ++ ")"
+        | Sin x <- expr = "sin (" ++ showExpr x ++ ")"
+        | Cos x <- expr = "cos (" ++ showExpr x ++ ")"
+        | Log x <- expr = "log (" ++ showExpr x ++ ")"
 
 {-|
 Symbolically differentiates a term with respect to a given identifier.
