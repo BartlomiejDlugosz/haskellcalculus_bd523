@@ -16,14 +16,29 @@ type Env = [(String, Double)]
 deriving instance Show Expr
 
 instance Num Expr where
-  fromInteger = undefined
-  negate      = Neg
-  (+)         = Add
-  (*)         = Mul
+  fromInteger = Val . fromIntegral
+  negate a
+        | Val 0 <- a = 0
+        | otherwise = Neg a
+  (-) a b = a + negate b
+  (+) a b
+        | Val 0 <- a = b
+        | Val 0 <- b = a
+        | otherwise = Add a b
+  (*) a b
+        | Val 1 <- a = b
+        | Val 1 <- b = a
+        | Val 0 <- a = 0
+        | Val 0 <- b = 0
+        | otherwise = Mul a b
 
 instance Fractional Expr where
-  fromRational = undefined
-  (/)          = Div
+  fromRational = Val . fromRational
+  (/) a b
+        | Val 0 <- a = 0
+        | Val 0 <- b = undefined
+        | Val 1 <- b = a
+        | otherwise = Div a b
 
 instance Floating Expr where
   sin = Sin
@@ -62,10 +77,10 @@ Symbolically differentiates a term with respect to a given identifier.
 -}
 diff :: Expr -> String -> Expr
 diff (Id x) st
-        | x == st = Val 1
-        | otherwise = Val 0
+        | x == st = 1
+        | otherwise = 0
 diff expr st 
-        | Val x <- expr = Val 0
+        | Val x <- expr = 0
         | Add x y <- expr = diff x st + diff y st
         | Mul x y <- expr = (x * diff y st) + (diff x st * y)
         | Div x y <- expr = ((diff x st * y) - (x * diff y st)) / (y * y)
