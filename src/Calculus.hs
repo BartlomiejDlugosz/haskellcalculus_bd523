@@ -92,10 +92,10 @@ showExpr expr = case expr of
 Symbolically differentiates a term with respect to a given identifier.
 -}
 diff :: Expr -> String -> Expr
-diff (Id x) st
-        | x == st = 1
-        | otherwise = 0
 diff expr st = case expr of
+        Id x -> case x of
+                st -> 1
+                _ -> 0
         Val x -> 0
         Add x y -> diff x st + diff y st
         Mul x y -> (x * diff y st) + (diff x st * y)
