@@ -23,7 +23,10 @@ instance Num Expr where
   negate a
         | Val 0 <- a = 0
         | otherwise = Neg a
-  (-) a b = a + negate b
+  (-) a b 
+        | Val 0 <- a = negate b
+        | Val 0 <- b = a
+        | otherwise = a + negate b
   (+) a b
         | Val 0 <- a = b
         | Val 0 <- b = a
