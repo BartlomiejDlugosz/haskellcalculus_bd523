@@ -59,6 +59,21 @@ lookUp x = fromJust . lookup x
 Evaluates a given expression, evaluating any variables to their value within
 the provided environment.
 -}
+-- eval :: Expr -> Env -> Double
+-- eval expr env = let x' = eval x env 
+--                     y' = eval y env
+--         in case expr of
+--         Val x -> x
+--         Id x -> lookUp x env
+--         Add x y -> x' + y'
+--         Neg x -> negate x'
+--         Mul x y -> x' * y'
+--         Div x (Val 0) -> undefined
+--         Div x y -> x' / y'
+--         Sin x -> sin x'
+--         Cos x -> cos x'
+--         Log x -> log x'
+
 eval :: Expr -> Env -> Double
 eval expr env = case expr of
         Val x -> x
@@ -93,9 +108,7 @@ Symbolically differentiates a term with respect to a given identifier.
 -}
 diff :: Expr -> String -> Expr
 diff expr st = case expr of
-        Id x -> case x of
-                st -> 1
-                _ -> 0
+        Id x -> if x == st then 1 else 0
         Val x -> 0
         Add x y -> diff x st + diff y st
         Mul x y -> (x * diff y st) + (diff x st * y)
@@ -119,11 +132,10 @@ maclaurin expr x t = helper expr 0
                 factorial :: Int -> Double
                 factorial n = fromIntegral (product [1..n])
 
-                toPower :: Double -> Int -> Double
-                toPower _ 0 = 1
-                toPower x i = x * toPower x (i - 1)
-
                 helper :: Expr -> Int -> Double
                 helper expr i
-                        | i < t = eval (Val (eval ((Val (eval expr [("x", 0)]) * Val (toPower x i)) / Val (factorial i)) [("x", x)]) + Val (helper (diff expr "x") (i + 1))) [("x", x)]
+                        | i < t = (f_0 * (x ^^ i) / factorial i) + f'_0
                         | otherwise = 0
+                        where
+                                f_0 = eval expr [("x", 0)]
+                                f'_0 = helper (diff expr "x") (i + 1)
