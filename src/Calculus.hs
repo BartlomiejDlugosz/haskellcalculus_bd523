@@ -59,20 +59,6 @@ lookUp x = fromJust . lookup x
 Evaluates a given expression, evaluating any variables to their value within
 the provided environment.
 -}
--- eval :: Expr -> Env -> Double
--- eval expr env = let x' = eval x env 
---                     y' = eval y env
---         in case expr of
---         Val x -> x
---         Id x -> lookUp x env
---         Add x y -> x' + y'
---         Neg x -> negate x'
---         Mul x y -> x' * y'
---         Div x (Val 0) -> undefined
---         Div x y -> x' / y'
---         Sin x -> sin x'
---         Cos x -> cos x'
---         Log x -> log x'
 
 eval :: Expr -> Env -> Double
 eval expr env = case expr of
