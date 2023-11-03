@@ -12,10 +12,17 @@ main = defaultMain tests
 
 tests :: TestTree
 tests = testGroup "calculus"
-  [ testGroup "eval" (numberedTests evalTests)
+  [ testGroup "lookUp" (numberedTests lookUpTests)
+  , testGroup "eval" (numberedTests evalTests)
   , testGroup "diff" (numberedTests diffTests)
   , testGroup "maclaurin" (numberedTests maclaurinTests)
   ]
+
+lookUpTests :: [Assertion]
+lookUpTests = [ lookUp "x" [("x", 5)] --> 5
+               , lookUp "y" [("y", 8), ("x", 10), ("z", 6)] --> 8
+               , lookUp "y" [("y", 8), ("x", 10), ("z", 6), ("y", 10)] --> 8 
+               ]
 
 evalTests :: [Assertion]
 evalTests = [ eval (Val 7)  [("x",380)] ~~> 7.0
@@ -35,6 +42,8 @@ evalTests = [ eval (Val 7)  [("x",380)] ~~> 7.0
             , eval e4 [("x",0.37)] ~~> (-0.9323273456060345)
             , eval e5 [("x",0.37)] ~~> 0.6433720724587564
             , eval e6 [("x",0.37)] ~~> 0.8799171617597958
+            , eval e3 [("x", 0.45), ("y", 0.7)] ~~> -0.18636363636
+            , eval e7 [("x", 2.71828)] ~~> 0.11384875642
             ]
 
 diffTests :: [Assertion]
@@ -63,6 +72,8 @@ diffTests = [ diff e1 "x" --> Add (Mul (Val 5.0) (Val 1.0))
                                        (Val 0.0))
                                   (Add (Mul (Val 3.0) (Mul (Id "x") (Id "x")))
                                        (Val 2.0))
+          , diff e7 "x" --> Div (Add (Mul (Mul (Cos (Mul (Val 3.0) (Id "x"))) (Val 3.0)) (Add (Val 1.0) (Mul (Id "x") (Id "x")))) 
+                                     (Neg (Mul (Sin (Mul (Val 3.0) (Id "x"))) (Mul (Val 2.0) (Id "x"))))) (Mul (Add (Val 1.0) (Mul (Id "x") (Id "x"))) (Add (Val 1.0) (Mul (Id "x") (Id "x"))))
             ]
 
 maclaurinTests :: [Assertion]
@@ -72,6 +83,8 @@ maclaurinTests = [ maclaurin (Sin (Id "x")) 2 2 ~~> 2.0
                  , maclaurin (Sin (Id "x")) 2 7 ~~> 0.9333333333333333
                  , maclaurin (Sin (Id "x")) 2 9 ~~> 0.9079365079365079
                  , maclaurin (Cos (Id "x")) 4 9 ~~> -0.39682539682539764
+                 , maclaurin e1 10 2 ~~> 50
+                 , maclaurin e4 2.7 5 ~~> 0.43066249999999995
                  ]
 
 -------------------------------------------------------------------------------

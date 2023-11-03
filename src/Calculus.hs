@@ -30,12 +30,20 @@ instance Num Expr where
   (+) a b
         | Val 0 <- a = b
         | Val 0 <- b = a
+        | Id c <- a
+        , Id c <- b = 2 * Id c
+        | Val c <- a
+        , Val d <- b = Val (c + d)
         | otherwise = Add a b
   (*) a b
         | Val 1 <- a = b
         | Val 1 <- b = a
         | Val 0 <- a = 0
         | Val 0 <- b = 0
+        | Val c <- a
+        , Mul (Val d) (Id e) <- b = Val (c * d) * Id e
+        | Val c <- b
+        , Mul (Val d) (Id e) <- a = Val (c * d) * Id e
         | otherwise = Mul a b
 
 instance Fractional Expr where
@@ -112,16 +120,12 @@ maclaurin :: Expr   -- ^ expression to approximate (with `x` free)
           -> Double -- ^ value to give to `x`
           -> Int    -- ^ number of terms to expand
           -> Double -- ^ the approximate result
-maclaurin expr x t = helper expr 0
+maclaurin expr x t = helper expr 0 1
         where
-                -- -> Double since the helper function requires it in terms of double
-                factorial :: Int -> Double
-                factorial n = fromIntegral (product [1..n])
-
-                helper :: Expr -> Int -> Double
-                helper expr i
-                        | i < t = (f_0 * (x ^^ i) / factorial i) + f'_0
+                helper :: Expr -> Int -> Int -> Double
+                helper expr i fac
+                        | i < t = (f_0 * (x ^^ i) / fromIntegral fac) + f'_0
                         | otherwise = 0
                         where
                                 f_0 = eval expr [("x", 0)]
-                                f'_0 = helper (diff expr "x") (i + 1)
+                                f'_0 = helper (diff expr "x") (i + 1) (fac * (i + 1))

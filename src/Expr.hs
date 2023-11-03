@@ -8,7 +8,7 @@ data Expr = Val Double | Id String
           | Neg Expr | Sin Expr | Cos Expr | Log Expr
 
 {- Test cases from the spec. -}
-e1, e2, e3, e4, e5, e6 :: Expr
+e1, e2, e3, e4, e5, e6, e7 :: Expr
 
 -- | 5*x
 e1 =  Mul (Val 5.0) (Id "x")
@@ -36,3 +36,7 @@ e5 =  Sin (Add (Val 1.0)
 e6 =  Log (Add (Mul (Val 3.0)
                     (Mul (Id "x") (Id "x")))
                (Val 2.0))
+
+-- (sin ((3.0 * x)) / (1.0 + (x * x)))
+e7 = Div (Sin (Mul (Val 3.0) (Id "x")))
+         (Add (Val 1.0) (Mul (Id "x") (Id "x")))
